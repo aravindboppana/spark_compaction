@@ -1,0 +1,25 @@
+{
+  "spark": {
+    "master": "local[*]",
+    "app_name": "SPARK_COMPACTION"
+  },
+  "hdfs": {
+    "source_data_location": "/user/clairvoyant/Spark_Compaction",
+    "target_data_location": "/user/clairvoyant/Spark_Compaction_Processed"
+  },
+  "compaction": {
+    "compaction_strategy": "new",
+    "enable_num_partitions": false,
+    "num_partitions": 10,
+    "size_ranges_for_compaction": [
+      {"min_size_in_gb": 0, "max_size_in_gb": 50,"size_after_compaction_in_mb": 256},
+      {"min_size_in_gb": 50, "max_size_in_gb": 100,"size_after_compaction_in_mb": 512},
+      {"min_size_in_gb": 100, "max_size_in_gb": 0,"size_after_compaction_in_mb": 1000}
+    ],
+    "source_db": "nyu",
+    "source_table": "flower_data",
+    "target_db": "nyu",
+    "target_table": "flower_data_compacted"
+  }
+
+}
