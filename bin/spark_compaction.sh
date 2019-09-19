@@ -43,12 +43,16 @@ echo "Starting Compaction"
 compaction
 
 if [[ $? = 0 && "${COMPACTION_STRATEGY}" = "rewrite" ]]; then
-    echo "Drop and reload Data"
+    echo "BACKING UP THE SOURCE DATA BEFORE COMPACTION"
     hadoop fs -cp ${SOURCE_DATA_LOCATION} ${SOURCE_DATA_BACKUP_LOCATION}
+    echo "Dropping Source Data"
     hadoop fs -rm -r ${SOURCE_DATA_LOCATION}
+    echo "Copying Compacted files to Source Location"
     hadoop fs -cp /tmp/Spark_Compaction ${SOURCE_DATA_LOCATION}
     if [[ $? = 0 ]]; then
+        echo "Dropping Compacted files in Temp location"
         hadop fs -rm -r /tmp/Spark_Compaction
+        echo "Dropping Source Data Backup before compacting"
         hadoop fs -rm -r ${SOURCE_DATA_BACKUP_LOCATION}
     fi
     impala-shell -q "INVALIDATE METADATA ${SOURCE_DB}.${SOURCE_TABLE}"
@@ -56,7 +60,7 @@ if [[ $? = 0 && "${COMPACTION_STRATEGY}" = "rewrite" ]]; then
 fi
 
 if [[ $? = 0 && "${COMPACTION_STRATEGY}" = "new" ]]; then
-    echo "Create new external table as old one pointing to new location"
+    echo "Create new external table as the one in the Source DB"
     hive -e "CREATE EXTERNAL TABLE ${TARGET_DB}.${TARGET_TABLE} LIKE ${SOURCE_DB}.${SOURCE_TABLE} STORED AS PARQUET LOCATION '${TARGET_DATA_LOCATION}' "
     impala-shell -q "INVALIDATE METADATA ${TARGET_DB}.${TARGET_TABLE}"
     impala-shell -q "COMPUTE STATS ${TARGET_DB}.${TARGET_TABLE}"
