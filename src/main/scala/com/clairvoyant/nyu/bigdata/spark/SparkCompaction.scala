@@ -50,7 +50,7 @@ object SparkCompaction {
             val files = it.toList
             println("No.of files: " + files.size)
 
-            val hdfs_dir_size_in_mb = files.map(_.getLen).sum * 0.00000095367432  // Re-visit This
+            val hdfs_dir_size_in_mb = files.map(_.getLen).sum * 0.000001
             println("Size: " + hdfs_dir_size_in_mb + " MB")
 
             val hdfs_dir_size_in_gb = hdfs_dir_size_in_mb * 0.001
