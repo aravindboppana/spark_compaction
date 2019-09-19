@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-HELP_STR=""" """
-
 BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LIB_DIR="${BIN_DIR}/../lib"
 CONF_DIR="${BIN_DIR}/../conf"
