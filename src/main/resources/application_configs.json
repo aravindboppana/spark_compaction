@@ -5,12 +5,14 @@
   },
   "hdfs": {
     "source_data_location": "/user/clairvoyant/Spark_Compaction",
-    "target_data_location": "/user/clairvoyant/Spark_Compaction_Processed"
+    "target_data_location": "/user/clairvoyant/Spark_Compaction_Processed",
+    "temp_location_for_rewrite": "/tmp/Spark_Compaction"
   },
   "compaction": {
     "compaction_strategy": "new",
-    "enable_num_partitions": false,
-    "num_partitions": 10,
+    "enable_num_files": false,
+    "num_files": 10,
+    "compression": "snappy",
     "size_ranges_for_compaction": [
       {"min_size_in_gb": 0, "max_size_in_gb": 50,"size_after_compaction_in_mb": 256},
       {"min_size_in_gb": 50, "max_size_in_gb": 100,"size_after_compaction_in_mb": 512},
