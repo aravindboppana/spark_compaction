@@ -19,7 +19,7 @@
         <args4j.version>2.32</args4j.version>
         <slf4j.version>1.7.21</slf4j.version>
 
-        <main.class>com.clairvoyant</main.class>
+        <main.class>com.clairvoyant.nyu.bigdata.spark.SparkCompaction</main.class>
 
     </properties>
 
@@ -39,47 +39,6 @@
             <artifactId>spark-sql_${scala.simple.version}</artifactId>
             <version>${spark.version}</version>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- Spark Streaming -->
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming_${scala.simple.version}</artifactId>
-            <version>${spark.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-streaming-kafka-0-10_${scala.simple.version}</artifactId>
-            <version>${spark.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>${kafka.version}</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-mllib -->
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-mllib_${scala.simple.version}</artifactId>
-            <version>${spark.version}</version>
-        </dependency>
-
-        <!-- KUDU -->
-        <dependency>
-            <groupId>org.apache.kudu</groupId>
-            <artifactId>kudu-spark2_${scala.simple.version}</artifactId>
-            <version>${kudu_spark.version}</version>
-        </dependency>
-
-
-        <!-- Java Args -->
-        <dependency>
-            <groupId>args4j</groupId>
-            <artifactId>args4j</artifactId>
-            <version>${args4j.version}</version>
         </dependency>
 
         <!-- SLF4J (Logging) Dependencies -->

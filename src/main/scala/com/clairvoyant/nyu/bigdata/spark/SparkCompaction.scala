@@ -19,15 +19,25 @@ object SparkCompaction {
         val SPARK_APP_NAME: String = config.getString("spark.app_name")
         val SPARK_MASTER: String = config.getString("spark.master")
 
-        val SOURCE_DATA_LOCATION_HDFS = config.getString("hdfs.source_data_location")
-        val TARGET_DATA_LOCATION_HDFS = config.getString("hdfs.target_data_location")
-
         val COMPACTION_STRATEGY = config.getString("compaction.compaction_strategy")
         val ENABLE_NUM_FILES = config.getBoolean("compaction.enable_num_files")
         var NUM_FILES = config.getInt("compaction.num_files")
         val COMPRESSION = config.getString("compaction.compression")
         val SIZE_RANGES_FOR_COMPACTION: ConfigList = config.getList("compaction.size_ranges_for_compaction")
         val DECODED_SIZE_RANGES_FOR_COMPACTION: Array[AnyRef] = SIZE_RANGES_FOR_COMPACTION.unwrapped().toArray
+
+        val SOURCE_DATA_LOCATION_HDFS = args(0)
+        var TARGET_DATA_LOCATION_HDFS = "/tmp"
+
+        if(args.length < 1){
+            LOGGER.error("Provide enough arguments to process")
+            System.exit(0)
+        } else if(COMPACTION_STRATEGY == "new" && args.length == 2){
+            TARGET_DATA_LOCATION_HDFS = args(1)
+        } else if(COMPACTION_STRATEGY == "new" && args.length < 2){
+            LOGGER.error("Provide Source and target data locations as arguments")
+            System.exit(0)
+        }
 
         LOGGER.info("SPARK_APP_NAME: " + SPARK_APP_NAME)
         LOGGER.info("SPARK_MASTER: " + SPARK_MASTER)
@@ -41,7 +51,7 @@ object SparkCompaction {
         LOGGER.info("COMPRESSION: " + COMPRESSION)
 
         val sparkConf = new SparkConf().setAppName(SPARK_APP_NAME).setMaster(SPARK_MASTER)
-        val spark = SparkSession.builder.config(sparkConf).enableHiveSupport().getOrCreate()
+        val spark = SparkSession.builder.config(sparkConf).getOrCreate()
 
         if (!ENABLE_NUM_FILES) {
 
@@ -63,15 +73,13 @@ object SparkCompaction {
 
             // Materialize iterator
             val files = it.toList
-            println("No.of files: " + files.size)
+            LOGGER.info("No.of files: " + files.size)
 
-            println("Files: " + files)
+            val hdfs_dir_size_in_mb = files.map(_.getLen).sum * 0.00000095367432
+            LOGGER.info("Size: " + hdfs_dir_size_in_mb + " MB")
 
-            val hdfs_dir_size_in_mb = files.map(_.getLen).sum * 0.00000095
-            println("Size: " + hdfs_dir_size_in_mb + " MB")
-
-            val hdfs_dir_size_in_gb = hdfs_dir_size_in_mb * 0.00097656
-            println("Size in GB: " + hdfs_dir_size_in_gb)
+            val hdfs_dir_size_in_gb = hdfs_dir_size_in_mb * 0.0009756
+            LOGGER.info("Size in GB: " + hdfs_dir_size_in_gb)
 
             DECODED_SIZE_RANGES_FOR_COMPACTION.foreach(f = map => {
                 val hashMap = map.asInstanceOf[java.util.HashMap[String, Int]]
@@ -91,16 +99,17 @@ object SparkCompaction {
 
             NUM_FILES = roundUp(hdfs_dir_size_in_mb / partition_size)
         }
+        LOGGER.info("Number of Output Files: " + NUM_FILES)
+
         val df = spark.read.parquet(SOURCE_DATA_LOCATION_HDFS)
 
-
         if(COMPACTION_STRATEGY == "rewrite"){
-            println("Rewriting Strategy")
-            df.repartition(NUM_FILES).write.mode("overwrite").option("compression",COMPRESSION).parquet("/tmp/Spark_Compaction")
+            LOGGER.info("Rewriting Strategy")
+            df.coalesce(NUM_FILES).write.mode("overwrite").parquet(SOURCE_DATA_LOCATION_HDFS + "_temp")
         }
         else {
-            println("Writing to new Location")
-            df.repartition(NUM_FILES).write.parquet(TARGET_DATA_LOCATION_HDFS)
+            LOGGER.info("Writing to new Location")
+            df.coalesce(NUM_FILES).write.parquet(TARGET_DATA_LOCATION_HDFS)
         }
 
     }
