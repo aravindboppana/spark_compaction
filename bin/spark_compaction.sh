@@ -7,7 +7,7 @@ Please provide the arguments as follows
 Example 1: Strategy: new
     sh spark_compaction.sh {source_db_name} {source_table_name} {source_data_location} {target_db_name} {target_table_name} {target_data_location}
 
-Example 2: Strategy: rewrite
+Example 2: Strategy: overwrite
     sh spark_compaction.sh {source_db_name} {source_table_name} {source_data_location}
 
 """
@@ -149,7 +149,7 @@ if [[ "${COMPACTION_STRATEGY}" == "new" ]]; then
         echo "SUCCESSFULLY COMPLETED COMPACTION"
     fi
 
-elif [[ "${COMPACTION_STRATEGY}" = "rewrite" ]]; then
+elif [[ "${COMPACTION_STRATEGY}" = "overwrite" ]]; then
 
     impala-shell -q "SHOW TABLE STATS ${SOURCE_DB_NAME}.${SOURCE_TABLE_NAME}"
     compaction "${SOURCE_DATA_LOCATION}"
@@ -189,7 +189,7 @@ elif [[ "${COMPACTION_STRATEGY}" = "rewrite" ]]; then
 
 else
     echo "##########################"
-    echo "Provide new or rewrite as compaction strategies"
+    echo "Provide new or overwrite as compaction strategies"
     echo "##########################"
     exit 0
 fi

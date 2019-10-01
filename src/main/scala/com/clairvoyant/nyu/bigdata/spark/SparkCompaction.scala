@@ -103,8 +103,8 @@ object SparkCompaction {
 
         val df = spark.read.parquet(SOURCE_DATA_LOCATION_HDFS)
 
-        if(COMPACTION_STRATEGY == "rewrite"){
-            LOGGER.info("Rewriting Strategy")
+        if(COMPACTION_STRATEGY == "overwrite"){
+            LOGGER.info("Overwriting Strategy")
             df.coalesce(NUM_FILES).write.mode("overwrite").parquet(SOURCE_DATA_LOCATION_HDFS + "_temp")
         }
         else {
