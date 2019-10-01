@@ -19,22 +19,22 @@ object SparkCompaction {
         val SPARK_APP_NAME: String = config.getString("spark.app_name")
         val SPARK_MASTER: String = config.getString("spark.master")
 
-        val COMPACTION_STRATEGY = config.getString("compaction.compaction_strategy")
         val ENABLE_NUM_FILES = config.getBoolean("compaction.enable_num_files")
         var NUM_FILES = config.getInt("compaction.num_files")
         val COMPRESSION = config.getString("compaction.compression")
         val SIZE_RANGES_FOR_COMPACTION: ConfigList = config.getList("compaction.size_ranges_for_compaction")
         val DECODED_SIZE_RANGES_FOR_COMPACTION: Array[AnyRef] = SIZE_RANGES_FOR_COMPACTION.unwrapped().toArray
 
-        val SOURCE_DATA_LOCATION_HDFS = args(0)
+        val COMPACTION_STRATEGY = args(0)
+        val SOURCE_DATA_LOCATION_HDFS = args(1)
         var TARGET_DATA_LOCATION_HDFS = "/tmp"
 
-        if(args.length < 1){
+        if(args.length < 2){
             LOGGER.error("Provide enough arguments to process")
             System.exit(0)
-        } else if(COMPACTION_STRATEGY == "new" && args.length == 2){
-            TARGET_DATA_LOCATION_HDFS = args(1)
-        } else if(COMPACTION_STRATEGY == "new" && args.length < 2){
+        } else if(COMPACTION_STRATEGY == "new" && args.length == 3){
+            TARGET_DATA_LOCATION_HDFS = args(2)
+        } else if(COMPACTION_STRATEGY == "new" && args.length < 3){
             LOGGER.error("Provide Source and target data locations as arguments")
             System.exit(0)
         }

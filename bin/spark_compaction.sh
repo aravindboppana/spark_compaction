@@ -5,10 +5,10 @@ HELP_STR="""
 Please provide the arguments as follows
 
 Example 1: Strategy: new
-    sh spark_compaction.sh {source_db_name} {source_table_name} {source_data_location} {target_db_name} {target_table_name} {target_data_location}
+    sh spark_compaction.sh {compaction_strategy} {source_db_name} {source_table_name} {source_data_location} {target_db_name} {target_table_name} {target_data_location}
 
 Example 2: Strategy: overwrite
-    sh spark_compaction.sh {source_db_name} {source_table_name} {source_data_location}
+    sh spark_compaction.sh {compaction_strategy} {source_db_name} {source_table_name} {source_data_location}
 
 """
 
@@ -65,12 +65,13 @@ invalidate_metadata_and_compute_stats() {
 
 }
 
-SOURCE_DB_NAME="$1"
-SOURCE_TABLE_NAME="$2"
-SOURCE_DATA_LOCATION="$3"
+COMPACTION_STRATEGY="$1"
+SOURCE_DB_NAME="$2"
+SOURCE_TABLE_NAME="$3"
+SOURCE_DATA_LOCATION="$4"
 TARGET_DB_NAME="$4"
-TARGET_TABLE_NAME="$5"
-TARGET_DATA_LOCATION="$6"
+TARGET_TABLE_NAME="$6"
+TARGET_DATA_LOCATION="$7"
 
 BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LIB_DIR="${BIN_DIR}/../lib"
@@ -78,11 +79,10 @@ CONF_DIR="${BIN_DIR}/../conf"
 JAR_FILE_LOCATION="${LIB_DIR}/spark-compaction-jar-with-dependencies.jar"
 APPLICATION_CONF_FILE="${CONF_DIR}/application_configs.json"
 
-COMPACTION_STRATEGY=`cat "$APPLICATION_CONF_FILE" | python -c "import json,sys;obj=json.load(sys.stdin);print obj['compaction']['compaction_strategy'];"`
 SOURCE_DATA_BACKUP_LOCATION="${SOURCE_DATA_LOCATION}_backup"
 COMPACTED_TEMP_LOCATION="${SOURCE_DATA_LOCATION}_temp"
 
-if [[ -z "${SOURCE_DB_NAME}" || -z "${SOURCE_TABLE_NAME}" || -z ${SOURCE_DATA_LOCATION} ]]; then
+if [[ -z "${COMPACTION_STRATEGY}" || -z "${SOURCE_DB_NAME}" || -z "${SOURCE_TABLE_NAME}" || -z ${SOURCE_DATA_LOCATION} ]]; then
     echo "Please provide all the arguments to proceed with the compaction Job. Please provide the arguments as follows"
     echo "${HELP_STR}"
     exit 0
@@ -181,6 +181,8 @@ elif [[ "${COMPACTION_STRATEGY}" = "overwrite" ]]; then
     else
         echo "Moving Source back to Source location as the row counts are not equal"
         hadoop fs -mv ${SOURCE_DATA_BACKUP_LOCATION} ${SOURCE_DATA_LOCATION}
+        invalidate_metadata_and_compute_stats "${SOURCE_DB_NAME}" "${SOURCE_TABLE_NAME}"
+
     fi
 
     if [[ $? = 0 ]]; then
